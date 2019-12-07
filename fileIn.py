@@ -56,8 +56,30 @@ def processParcel(item):
     return parcel
 
 
+def strcmp(a, b):
+    min_len = min(len(a), len(b))
+
+    i = 0
+    while i < min_len and a[i] == b[i]:
+        i += 1
+
+    return i < min_len and a[i] < b[i]
+
+
 def parcel_goes_first(a, b):
-    return b[0] > a[0]
+    if a[op_datetime] < b[op_datetime]:
+        return True
+
+    if a[op_datetime] > b[op_datetime]:
+        return False
+
+    if a[op_weight] < b[op_weight]:
+        return True
+    
+    if a[op_weight] > b[op_weight]:
+        return False
+    
+    return strcmp(a[op_client_name], b[op_client_name])
 
 
 def readParcelsFile(fileName):
@@ -165,10 +187,10 @@ def drone_can(drone, parcel):
     return True
 
 
-print(readDronesFile('TestSet1/drones11h00_2019y11m5.txt'))
-print(readParcelsFile('TestSet1/parcels11h00_2019y11m5.txt'))
-#print(readDronesFile('TestSet2/drones16h00_2019y11m5.txt'))
-#print(readParcelsFile('TestSet2/parcels16h00_2019y11m5.txt'))
+#print(readDronesFile('TestSet1/drones11h00_2019y11m5.txt'))
+#print(readParcelsFile('TestSet1/parcels11h00_2019y11m5.txt'))
+print(readDronesFile('TestSet2/drones16h00_2019y11m5.txt'))
+print(readParcelsFile('TestSet2/parcels16h00_2019y11m5.txt'))
 
 for parcel in parcels:
     location_name = parcel[op_location]
