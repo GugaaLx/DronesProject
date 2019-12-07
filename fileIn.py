@@ -28,9 +28,11 @@ location_list - a lista de items na qual vamos inserir o segundo argumento
 item - o objecto que saiu ou do processDrone ou do processParcel, ou seja
 uma lista tipificada cujo primeiro elemento e um datetime
 '''
-def list_insert(lista, item):
+
+
+def list_insert(lista, item, goes_first):
     i = 0
-    while i < len(lista) and lista[i][0] < item[0]:
+    while i < len(lista) and goes_first(item, lista[i]):
         i += 1
     lista = lista[:i] + [item] + lista[i:]
     return lista
@@ -54,22 +56,20 @@ def processParcel(item):
     return parcel
 
 
+def parcel_goes_first(a, b):
+    return b[0] >= a[0]
+
+
 def readParcelsFile(fileName):
     global parcels
     fileIn = open(fileName, 'r')
     [dt, company] = readHeader(fileIn)
     for line in fileIn:
         item = line.replace("\n", "").split(', ')
-        parcels = list_insert(parcels, processParcel(item))
+        parcels = list_insert(parcels, processParcel(item), parcel_goes_first)
     fileIn.close()
     return [dt, company]
 
-
-def dict_insert(dictionary, key, value):
-    if key in dictionary:
-        dictionary[key] = list_insert(dictionary[key], value)
-    else:
-        dictionary[key] = [value]
 
 
 drone_dict = {}
@@ -81,6 +81,18 @@ od_max_weight = 2
 od_max_distance = 3
 od_acum_distance = 4
 od_battery_life = 5
+
+
+def drone_goes_first(a, b):
+    return b[0] >= a[0]
+
+
+def dict_insert(dictionary, key, value):
+    if key in dictionary:
+        dictionary[key] = list_insert(dictionary[key], value, drone_goes_first)
+    else:
+        dictionary[key] = [value]
+
 
 '''
 esta funcao recebe uma lista de strings referente a um drone no formato
