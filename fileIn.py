@@ -32,7 +32,7 @@ uma lista tipificada cujo primeiro elemento e um datetime
 
 def list_insert(lista, item, goes_first):
     i = 0
-    while i < len(lista) and goes_first(item, lista[i]):
+    while i < len(lista) and not goes_first(item, lista[i]):
         i += 1
     lista = lista[:i] + [item] + lista[i:]
     return lista
@@ -57,7 +57,7 @@ def processParcel(item):
 
 
 def parcel_goes_first(a, b):
-    return b[0] >= a[0]
+    return b[0] > a[0]
 
 
 def readParcelsFile(fileName):
@@ -83,8 +83,25 @@ od_acum_distance = 4
 od_battery_life = 5
 
 
+#retorna true se o A deve ser inserido antes do B
+
 def drone_goes_first(a, b):
-    return b[0] >= a[0]
+    if b[od_datetime] > a[od_datetime]:
+        return True
+
+    if b[od_datetime] < a[od_datetime]:
+        return False
+
+    if a[od_battery_life] > b[od_battery_life]:
+        return True
+
+    if b[od_battery_life] < a[od_battery_life]:
+        return False
+
+    if a[od_acum_distance] < b[od_acum_distance]:
+        return True
+
+    return False
 
 
 def dict_insert(dictionary, key, value):
@@ -134,6 +151,8 @@ def drone_deliver(drone, parcel):
     output(parcel, drone[od_name])
     # modificar drone
     drone[od_datetime] += parcel[op_time_needed]
+    drone[od_acum_distance] += parcel[op_base_distance] * 2
+    drone[od_battery_life] -= parcel[op_base_distance] * 2 / 1000
 
 
 def drone_can(drone, parcel):
@@ -148,6 +167,8 @@ def drone_can(drone, parcel):
 
 print(readDronesFile('TestSet1/drones11h00_2019y11m5.txt'))
 print(readParcelsFile('TestSet1/parcels11h00_2019y11m5.txt'))
+#print(readDronesFile('TestSet2/drones16h00_2019y11m5.txt'))
+#print(readParcelsFile('TestSet2/parcels16h00_2019y11m5.txt'))
 
 for parcel in parcels:
     location_name = parcel[op_location]
@@ -165,7 +186,8 @@ for parcel in parcels:
         else:
             drone = drones_list.pop(i)
             drone_deliver(drone, parcel)
-            drones_list = list_insert(drones_list, drone)
+            drones_list = list_insert(drones_list, drone, drone_goes_first)
+            drone_dict[location_name] = drones_list
 
     else:
         parcel_cancel(parcel)
